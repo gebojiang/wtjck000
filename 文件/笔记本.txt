@@ -1,0 +1,978 @@
+1,wsl的anaconda环境安装open3d:
+[1]conda create --name open3denviroment000 python=3.11(conda环境的python版本小于等于3.11).
+[2]conda activate open3denviroment000.
+[3]pip install open3d.
+[4]conda install -c conda-forge libstdcxx-ng.
+
+2,3d-gaussian-splatting环境搭建(2d-gaussian-splatting一样):
+//以下是linux环境搭建-------------------------------------------------------------------------------------------------------------------------------------------------
+[1]需要ubuntu22.04.5操作系统.
+[2]gcc和g++版本都是14.2.0(参考16).
+[3]安装cuda12.9(参考45).
+[4]解压gaussian-splattingvx,y,z.rar(x,y,z都是版本号,解压rar参考69).
+[5]cd gaussian-splatting.
+[6]自动配置环境:bash enviroment000.sh.
+[7]手动配置环境:
+[[1]]conda create --name gaussian_splatting000  python=3.11.
+[[2]]conda activate gaussian_splatting000.
+[[3]]pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu129.
+[[4]]pip install plyfile.
+[[5]]pip install tqdm.
+[[6]]pip install opencv-python.
+[[7]]pip install joblib.
+[[8]]pip install ninja//没有这个也行,他是为了加速编译速度,Ninja是一个小型但极快的构建系统,专为速度而设计.
+[8]conda activate gaussian_splatting000(如果是[7]手动配置环境就不用执行这一句).
+[9]cd ./submodules/diff-gaussian-rasterization/.
+[10]rm -rf ./build/.
+[11]rm -rf ./diff_gaussian_rasterization/_C.cpython-37m-x86_64-linux-gnu.so.
+[12]python setup.py build_ext --inplace.
+[13]cp -r ./diff_gaussian_rasterization/ ../../.
+[14]cd ../../.
+[15]cd ./submodules/simple-knn/.
+[16]rm -rf ./build/.
+[17]rm -rf ./simple_knn/_C.cpython-37m-x86_64-linux-gnu.so.
+[18]python setup.py build_ext --inplace.
+[19]cp -r ./simple_knn/ ../../.
+[20]cd ../../.
+[21]cd ./submodules/fused-ssim/.
+[22]rm -rf ./build/.
+[23]rm -rf ./fused-ssim/_C.cpython-37m-x86_64-linux-gnu.so.
+[24]python setup.py build_ext --inplace.
+[25]cp -r ./fused-ssim/ ../../.
+[26]cd ../../.
+[27]编译并且安装siber viewer(参考46).
+[28]用ffmpeg抽帧(参考7).
+[29]用colmap生成初始数据(参考9).
+[30]python train.py -s ./input/bicycle001/.
+//以上是linux环境搭建-------------------------------------------------------------------------------------------------------------------------------------------------
+//以下是windows环境搭建-------------------------------------------------------------------------------------------------------------------------------------------------
+[31]需要windows11系统.
+[32]安装visual studio2022.
+[33]安装cuda12.9.
+[34]将msvc编译器加入环境变量(参考36).
+[35]安装anaconda.
+[36]手动配置环境:
+[[1]]conda create --name gaussian_splatting000  python=3.11.
+[[2]]conda activate gaussian_splatting000.
+[[3]]pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu129.
+[[4]]pip install plyfile.
+[[5]]pip install tqdm.
+[[6]]pip install opencv-python.
+[[7]]pip install joblib.
+[[8]]pip install ninja//没有这个也行,他是为了加速编译速度,Ninja是一个小型但极快的构建系统,专为速度而设计.
+[37]cd .\submodules\diff-gaussian-rasterization\.
+[38]rmdir /s /q .\build\.
+[39]del /q ".\diff_gaussian_rasterization\_C.cp311-win_amd64.pyd".
+[40]python setup.py build_ext --inplace.
+[41]xcopy /s /i "diff_gaussian_rasterization" "..\..\diff_gaussian_rasterization".
+[42]cd ..\..\.
+[43]cd .\submodules\simple-knn\.
+[44]rmdir /s /q .\build\.
+[45]del /q ".\simple_knn\_C.cp311-win_amd64.pyd".
+[46]python setup.py build_ext --inplace.
+[47]xcopy /s /i "simple_knn" "..\..\simple_knn".
+[48]cd ..\..\.
+[49]cd .\submodules\fused-ssim\.
+[50]rmdir /s /q .\build\.
+[51]del /q ".\fused_ssim\_C.cp311-win_amd64.pyd".
+[52]python setup.py build_ext --inplace.
+[53]xcopy /s /i "fused_ssim" "..\..\fused_ssim".
+[54]cd ..\..\.
+[55]直接运行预编译的siber viewer
+[56]用ffmpeg抽帧(参考7).
+[57]用colmap生成初始数据(参考9).
+[58]python train.py -s .\input\bicycle001\.
+//以上是windows环境搭建-------------------------------------------------------------------------------------------------------------------------------------------------
+
+3,如果windows10任务栏卡住了,在设备管理器里面禁用并重新启用绿联的usb wifi接收器.
+
+4,windows安装cuda:
+[1]先装visual studio,重启后再装cuda.
+[2]visual studio2022.17.13和cuda12.6以及cuda12.8不兼容,安装时候使用visual studio2022.17.12.5.
+
+5,windows10配置tsdf:
+[1]scikit-image版本0.18.3
+[2]python版本3.10.15
+
+6,2d-gaussian-splatting的gsmonitor使用方法(windows10):
+SIBR_remoteGaussian_app_rwdi.exe -s <path to COLMAP or NeRF Synthetic dataset> -m <path to trained model> 
+
+7,ffmpeg抽帧指令:
+ffmpeg -i bicycle001.mp4 -vf "fps=7" -q:v 2  .\images\image%03d.jpg.
+
+8,服务器docker创建并使用容器指令:
+[1]ssh gbj@10.7.59.163  -p 10007//连接服务器.
+[2]scp -P 10007 -r C:\workspace\file001.txt gbj@10.7.59.163:/home/gbj/cwj/ //往服务器传文件,这条命令在服务器外执行.
+[3]scp -P 10007 -r gbj@10.7.59.163:/home/gbj/cwj/file001.txt C:\workspace\ //从服务器读取文件,这条命令在服务器外执行.
+[4]docker pull ubuntu:22.04.//从docker hub(https://hub.docker.com)拉取指定版本的ubuntu.
+[5]docker run -it --gpus all --name rongqi001 -v /home/gbj/cwj:/mnt  ubuntu:22.04 /bin/bash //docker run用于创建并启动一个新的容器实例.
+//-it是两个选项的组合,-i 表示以交互模式启动容器,-t 则为容器分配一个伪终端
+//-v /home/gbj/cwj:/mnt这会挂载主机的目录/home/gbj/cwj到容器内的/mnt 目录.
+///bin/bash在容器内执行的命令,这里是启动一个Bash shell.
+[6]docker start rongqi001
+[7]docker exec -it rongqi001 bash//docker exec表示在已经运行的容器中执行命令
+//bash：是你希望在容器内执行的命令,通常是启动一个Bash shell.
+[8]exit.
+[9]docker stop rongqi001.
+[10]如果要删除的话:docker rm rongqi001.
+[11]docker ps -a//查看当前服务器所有docker容器.
+//docker ps:Docker中最常用的命令之一,用于显示正在运行的容器.
+//-a:显示所有容器,包括已停止的,正在运行的.
+
+9,colmap生成gaussian splatting初始数据:
+colmap automatic_reconstructor   --workspace_path . --image_path ./images   --sparse 1   --dense 0   --camera_model SIMPLE_PINHOLE
+//automatic_reconstructor是执行从图像到 3D 点云自动重建的命令.
+//--workspace_path .指定工作目录的路径 . 表示当前目录.
+//--sparse 1启用稀疏重建(Sparse Reconstruction).
+//--dense 0禁用密集重建(Dense Reconstruction).
+//--camera_model SIMPLE_PINHOLE指定相机模型类型,SIMPLE_PINHOLE 是一种简化的针孔相机模型,适用于没有畸变或者畸变可以忽略的情况.
+
+10,修改cryengine的字体缩放:D:\cryengine\CRYENGINE Launcher\Engines\5.7.1\Editor\Styles\stylesheet.qss里面的font-size为所需要的值.
+
+11, 3d-gaussian-splatting的viewer使用方法(windows10中):
+SIBR_gaussianViewer_app.exe -m D:\gaussian-splatting\output\f340c4b2-d
+
+12,windows10的wsl配置方法(windows11的参考42):
+[1]在启用或关闭windows功能中打开Hyper-V和linux子系统,并且重启.
+[2]在win10应用商店搜索wsl2并安装ubuntu22.04.
+[3]在ubuntu22.04中设置密码.
+[4]在cmd中输入:
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+[5]安装升级包https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi.
+[6]在cmd输入wsl --set-version Ubuntu-22.04 2.
+[7]在windows power shell中输入wsl --update.
+[8]vim ~/.bashrc.
+[9]export XDG_SESSION_TYPE=x11.
+[10]source ~/.bashrc.
+[11]sudo apt-get install x11-apps libxt6 libice6 libsm6 libxrender1.
+[12]安装gcc,g++,make,cmake和clang(参考16).
+
+13,windows10安装anaconda:
+[1]安装时选择仅为我安装.
+[2]不要将anaconda的python注册为系统python,这样可以在系统中同时保持两个独立的python,anaconda的python通过anaconda prompt访问，系统python通过cmd访问.
+[3](参考14).
+
+14,windows中将anaconda prompt配置进windows terminal:
+[1]打开 Windows Terminal 的设置.
+[2]根据 Windows PowerShell 的配置复制一份新的.
+[3]名称修改为anaconda prompt .
+[4]命令行参数修改为anaconda prompt快捷方式右键属性中的位置:%windir%\System32\cmd.exe "/K" D:\anaconda\Scripts\activate.bat D:\anaconda.
+[5]图标修改为:D:\anaconda\Menu\anaconda_console.ico.
+
+15,让pycharm使用wsl中的conda环境(必须要pycharm专业版):
+[1]打开项目.
+[2]在file/settings/project:projectname000/python interpreter里面点击设置齿轮,选择add,选择wsl,路径设置为:\\wsl$\Ubuntu-22.04\home\guobojiang\anaconda3\envs\gaussian_splatting\bin\python.        
+
+16,在linux安装多个版本的gcc,g++,make,cmake和clang:
+[1]sudo apt update还有sudo apt upgrade.
+[2]sudo apt install build-essential//这句话会自动安装适合你系统版本的gcc和g++,以及make等其他必要构建工具.
+[3]如果要从源码编译安装其他版本的make:
+[[1]]cd make-4.4.
+[[2]]./configure --prefix=/home/guobojiang/make4.4/.
+[[3]]make -j$(nproc).
+[[4]]sudo make install.
+[4]sudo mv /usr/bin/make /usr/bin/make4.3(把[2]安装的make改名为make4.3).
+[5]sudo ln -s /usr/bin/make4.3 /usr/bin/make(创建make软链接).
+[6]将不同版本make加入候选列表:
+[[1]]sudo update-alternatives --install /usr/bin/make make /usr/bin/make4.3 3.
+[[2]]sudo update-alternatives --install /usr/bin/make make /home/guobojiang/make4.4/bin/make 4.
+[7]选择当前已安装的make:sudo update-alternatives --config make(至此make安装完毕).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[8]sudo apt -y install  gcc-9   g++-9//这里安装你需要的其他版本gcc和g++.
+[9]如果需要编译源码安装gcc和g++(在wsl中编译时候,一定要在wsl自己的磁盘上面,而且要在固态硬盘上面):
+[[1]]cd gcc-14.2.0.
+[[2]]sudo ./contrib/download_prerequisites.
+[[3]]sudo ./configure --prefix=/home/guobojiang/gcc14.2.0/ --disable-multilib.
+[[4]]make -j$(nproc).
+[[5]]sudo make install.
+[10]将已安装的不同版本放入候选列表:
+[[1]]将[2]和[8]安装的gcc版本加入候选列表:sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-[] [](将[]换成其他已安装版本号).
+[[2]]将[2]和[8]安装的g++版本加入候选列表:sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-[] [](将[]换成其他已安装版本号).
+[[3]]将[9]编译源码安装的gcc版本加入候选列表:sudo update-alternatives --install /usr/bin/gcc gcc /home/guobojiang/gcc14.2.0/bin/gcc 14.
+[[4]]将[9]编译源码安装的g++版本加入候选列表:sudo update-alternatives --install /usr/bin/g++ g++ /home/guobojiang/gcc14.2.0/bin/g++ 14.
+[11]vim ~/.bashrc(普通用户和root用户的环境变量都要改).
+[12]加入以下内容:
+[[1]]#export PATH=/home/guobojiang/gcc14.2.0/bin:$PATH(这一条一般是注释掉的,如果没有[10]的[[3]]和[[4]]的时候才用).
+[[2]]export LD_LIBRARY_PATH=/home/guobojiang/gcc14.2.0/lib64:$LD_LIBRARY_PATH.
+[13]source ~/.bashrc.
+[14]选择当前已安装版本:
+[[1]]sudo update-alternatives --config gcc.
+[[2]]sudo update-alternatives --config g++(至此gcc和g++安装完了).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[15]sudo apt-get install libssl-dev.
+[16]sudo apt install cmake(这会自动安装适合你系统版本的cmake).
+[17]如果要从源码编译安装其他版本的cmake,解压cmake-4.1.0.tar.gz(需要从我的百度网盘或者https://cmake.org/download/下载).
+[18]把cmake-4.1.0文件夹复制进/ubuntu22.04.5/home/guobojiang文件夹.
+[19]sudo chmod -R 777 cmake-4.1.0-rc1.
+[20]cd cmake-4.1.0-rc1.
+[21]./bootstrap --prefix=/home/guobojiang/cmake4.1.0(这个/home/guobojiang/cmake4.1.0是要安装的目录).
+[22]make -j$(nproc).
+[23]make install.
+[24]要删除的话:make uninstall.
+[25]sudo mv /usr/bin/cmake /usr/bin/cmake3.22.1(把[15]安装的cmake改名为带版本号的).
+[26]sudo ln -s /usr/bin/cmake3.22.1 /usr/bin/cmake(创建软链接).
+[27]将已经安装的不同版本cmake加入候选列表:
+[[1]]sudo update-alternatives --install /usr/bin/cmake cmake /usr/bin/cmake3.22.1 3.
+[[2]]sudo update-alternatives --install /usr/bin/cmake cmake /home/guobojiang/cmake4.1.0/bin/cmake 4.
+[28]选择不同版本的cmake:sudo update-alternatives --config  cmake(至此cmake安装完了).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[29]注:要删除某个分组的候选列表:sudo update-alternatives --remove-all make.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[30]参考48.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+17,优化windows10linux子系统的虚拟磁盘空间(在windows powershell中):
+[1]wsl --shutdown
+[2]Import-Module Hyper-V
+[3]optimize-vhd -Path "C:\Users\GuoBojiang\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu22.04LTS_79rhkp1fndgsc\LocalState\ext4.vhdx" -Mode Full
+
+18,使用clash等vpn时候要改git的代理服务器的地址和端口:
+[1]git config --global http.proxy 127.0.0.1:7890.
+[2]git config --global https.proxy 127.0.0.1:7890.
+//git config:用于管理 Git 的配置项，可设置或查看参数.
+//--global:表示配置对当前用户的所有仓库生效(保存在用户主目录的C:\Users\GuoBojiang\.gitconfig 文件中).
+//http.proxy:指定 HTTP/HTTPS 协议使用的代理服务器地址和端口.
+
+19,unity项目用git进行版本控制(需要先安装git lfs,并且无法使用visual studio 2022自带的git工具):
+[1]关闭unity editor和visual studio2022(不要用visual studio2022自动生成git本地仓库,自动生成的git仓库会先提交两次,导致有些大于100mb的文件不被git lfs识别,结果就是git push错误.)
+[2]cd /d/workspace/game001/
+[3]touch README.md
+[4]vim README.md
+[5]git init
+[6]git config --global --add safe.directory "*"
+[7]git lfs install
+[8]git lfs track "*.resS"
+[9]git lfs track "*.dylib"
+[10]git lfs track "*.dll"
+[11]git lfs track "*.so"
+[12]git lfs track "dsymutil"
+[13]git add .gitattributes
+[14]git add --all
+[15]git commit -m "game001v版本号"
+[16]git remote add origin https://github.com/gebojiang/game001.git(或者阿里云的自建git仓库地址).
+[17]注意push的时候先用git push -u origin master再用git lfs push origin --all.
+[18]git clone正常.
+
+20,阿里云服务器用gitea搭建git仓库:
+[1]在阿里云官网创建阿里云服务器.
+[2]在阿里云官网改服务器密码为Guo12345678911.
+[3]在阿里云官网开放端口22,3000,7890.
+[4]在cmd中ssh root@ip地址连接服务器.
+[5]sudo adduser wtj.
+[6]su - wtj.
+[7]cd /home/wtj.
+[8]wget -O gitea https://dl.gitea.com/gitea/1.21.10/gitea-1.21.10-linux-amd64.
+[9]chmod +x gitea.
+[10]./gitea
+[11]http://服务器公网ip地址:3000.
+[12]注册然后使用.
+
+21,visual studio code在windows上配置c和c++环境:
+[1]解压mingw到指定文件夹.
+[2]设置系统环境变量的path为mingw的bin文件夹.
+[3]安装cmake.
+[4]安装visual studio code.
+[5]安装Chinese (Simplified) (简体中文) Language Pack for Visual Studio扩展.
+[6]安装C/C++扩展.
+[7]安装cmake tools扩展.
+[8]参考49.
+
+
+22,visual studio code在wsl上配置c和c++环境:
+[1]先在windows10上配置c和c++环境(参考21).
+[2]安装wsl扩展并且进入wsl内部.
+[3]在wsl内部安装CMake Tools扩展.
+[4]ctrl+shift+p输入cmake quick start,选择工具链为wsl中的工具链.
+[5]ctrl+shift+p输入cmake set launch/debug target选择当前启动目标.
+[6]ctrl+shift+p输入cmake set build target选择构建目标.
+
+23,clion在wsl上配置c和c++环境:
+[1]直接打开项目.
+[2]文件/设置/构建.执行.部署设置工具链为wsl的工具链.
+
+24,visual studio code:
+[1]打开文件:ctrl+o.
+[2]打开文件夹:ctrl+k,ctrl+o.
+
+25,linux安装anaconda:
+[1]时候不要用管理员权限sudo,要直接运行: ./Anaconda3-2024.10-1-Linux-x86_64.sh.
+[2]vim ~/.bashrc.
+[3]export PATH="/home/guobojiang/anaconda3/bin:$PATH".
+[4]source ~/.bashrc.
+
+26,git安装时候:
+[1]choosing https transport backend选择:use the openssl library.
+[2]git config --global core.editor "vim".
+
+27,ubuntu安装eigen,pangolin和sophus(安装顺序eigen,pangolin,sophus因为相互依赖):
+[1]安装gcc,g++,make,cmake和clang(参考16).
+[2]vim ~/.bashrc.
+[3]加入export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH.
+[4]source ~/.bashrc.
+[5]sudo apt update还有sudo apt upgrade.
+[6]sudo apt-get install libeigen3-dev.
+[7]sudo apt-get install plocate.
+[8]sudo updatedb.
+[9]locate eigen3(至此eigen库安装完成).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[10]sudo apt-get install libglew-dev.
+[11]sudo apt-get install libboost-dev libboost-thread-dev libboost-filesystem-dev.
+[12]sudo apt-get install ffmpeg libavcodec-dev libavutil-dev libavformat-dev libswscale-dev.
+[13]sudo apt-get install libpng-dev.
+[14]sudo apt install libepoxy-dev libegl1-mesa-dev.
+[15]在/home/guobojiang/输入:git clone git@github.com:stevenlovegrove/Pangolin.git.
+[16]cd Pangolin.
+[17]mkdir build && cd build.
+[18]cmake ...
+[19]make -j10.
+[20]sudo make install(如果用自己编译的gcc14.2.0和g++14.2.0:sudo LD_LIBRARY_PATH=/home/guobojiang/gcc14.2.0/lib64:$LD_LIBRARY_PATH make install).
+[21]sudo updatedb.
+[22]locate pangolin(至此pangolin安装完成).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[23]git clone git@github.com:fmtlib/fmt.git.
+[24]把fmt文件夹复制进/ubuntu22.04.5/home/guobojiang文件夹.
+[25]cd fmt.
+[26]mkdir build.
+[27]cd build.
+[28]cmake ...
+[29]make.
+[30]sudo make install(如果用自己编译的gcc14.2.0和g++14.2.0:sudo LD_LIBRARY_PATH=/home/guobojiang/gcc14.2.0/lib64:$LD_LIBRARY_PATH make install).
+[31]sudo updatedb.
+[32]locate fmt(至此fmt库安装完成).
+[33]git clone https://github.com/strasdat/Sophus.git.
+[34]把Sphus文件夹复制进/ubuntu22.04.5/home/guobojiang文件夹.
+[35]cd Sophus.
+[36]mkdir build&&cd build.
+[37]cmake ...
+[38]make.
+[39]sudo make install(如果用自己编译的gcc14.2.0和g++14.2.0:sudo LD_LIBRARY_PATH=/home/guobojiang/gcc14.2.0/lib64:$LD_LIBRARY_PATH make install).
+[40]sudo updatedb.
+[41]locate sophus(至此sophus库安装完成).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+28,wsl设置ui缩放:
+[1]在C:\Users\guobojiang\创建一个.wslgconfig.
+[2]vim .wslgconfig.
+[3]输入：
+[system-distro-env]
+;hi-dpi
+WESTON_RDP_HI_DPI_SCALING=true
+WESTON_RDP_FRACTIONAL_HI_DPI_SCALING=true
+;100 to 500
+WESTON_RDP_DEBUG_DESKTOP_SCALING_FACTOR=200
+[4]windows power shell里面输入:wsl --shutdown.
+
+29,重置wsl:
+[1]在应用里面重置ubuntu22.04.5.
+[2]在windows power shell里面输入:wsl --unregister Ubuntu-22.04.
+[3]重新启动ubuntu22.04.5.
+
+30,Direct Voxel Grid Optimization环境搭建:
+[1]安装gcc,g++,make,cmake和clang(参考16).
+[2]安装cuda11.1(参考45).
+[3]安装anaconda(参考25).
+[4]创建conda环境: conda create --name dvgo000 python=3.9.
+[5]conda activate dvgo000.
+[6]pip install torch==1.10.1+cu111 torchvision==0.11.2+cu111 torchaudio==0.10.1 -f https://download.pytorch.org/whl/cu111/torch_stable.html.
+[7]pip install scipy==1.13.1.
+[8]pip install mmengine==0.10.7.
+[9]pip uninstall numpy.
+[10]pip install numpy==1.21.0.
+[11]下载并安装torch_scatter:pip install torch_scatter-2.0.9-cp39-cp39-linux_x86_64.whl.
+[12]pip install tqdm==4.65.2.
+[13]conda install -c conda-forge opencv.
+[14]conda install imageio=2.37.0.
+[15] conda install imageio-ffmpeg=0.6.0.
+[16]git clone https://github.com/ninja-build/ninja.git.
+[17]sudo apt-get install ninja-build.
+[18] conda config --append channels conda-forge.
+[19]conda install einops=0.8.1.
+[20]pip install torch-efficient-distloss==0.1.3
+[21]把run.py中的mmcv全部替换成mmengine.
+[22]把/lib/dvgo.py里面的460和461行替换成:
+[[1]]torch.linspace(0, int(W)-1, int(W), device=c2w.device),
+[[2]]torch.linspace(0, int(H)-1, int(H), device=c2w.device))  # pytorch's meshgrid has indexing='ij'
+[23]把/lib/dvgo.py里面的520行替换成:rays_o, rays_d = get_rays(int(H), int(W), K, c2w, inverse_y=inverse_y, flip_x=flip_x, flip_y=flip_y, mode=mode).
+
+31,切换国际版的unity和国内版的unity:
+[1]挂美国的vpn.
+[2]在https://unity.com/download这个网站下载unityhub和unity的国际版本,还有shaders和documentation.
+[3]安装unityhub和unity.
+[4]直接打开unityhub就是国内版本.
+[5]注销国内版本,关闭unityhub.
+[6]打开vpn.
+[7]运行启动国际版unityhub.bat.
+[8]这时打开的就是国际版unityhub.
+
+32,游戏引擎的wpf项目配置(解决方案包括wpf本体项目,c++/cli项目还有p/invoke项目):
+[1]在visual studio2022中创建wpf应用程序(是.net 8.0版本不是.net framework版本,而且不勾选将解决方案和项目放在同一目录).
+[2]右键项目,选择属性.
+[3]属性中:生成/常规/目标平台选择x64.
+[4]属性中勾选为该项目启用windows窗体.
+[5]在App.xaml.cs中第10行修改为public partial class App : System.Windows.Application(至此wpf本体项目配置完成).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[6]右键解决方案,添加新建项目.
+[7]选择clr类库.
+[8]右键clr类库项目,选择属性.
+[9]选择:配置属性/高级/.net 目标框架为.net 8.0.
+[10]右键wpf应用程序项目,选择:添加/项目引用,添加刚才创建的clr类库项目(至此c++/cli项目配置完成,c++/cli是被时代淘汰的技术,不到迫不得已不要用).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[11]右键解决方案,添加新建项目.
+[12]选择c++动态链接库.
+[13]为该项目配置opengl4.6(参考40,至此p/invoke项目配置完了).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+33,linux上运行Avalonia发布的程序:
+[1]在wsl中运行Avalonia发布的程序时候,要先输入:sudo apt-get install x11-apps libxt6 libice6 libsm6 libxrender1.
+[2]在ubuntu运行Avalonia发布的程序时候,要先输入:sudo apt-get install libice6.
+
+34,visual studio code配置latex:
+[1]挂载texlive2025.iso.
+[2]以管理员权限运行install-tl-windows.bat安装texlive.
+[3]给visual studio code安装LaTeX Workshop插件.
+[4]修改visual studio code的settings.json文件为/wtjck000/工具/settings.json.
+
+35,firefox浏览器ui缩放:
+[1]地址栏搜索:about:config.
+[2]搜索首选项:layout.css.devPixelsPerPx.
+
+36,windows10中将msvc编译器加入环境变量(windows11也一样):
+[1]右键此电脑,/属性/高级系统设置/环境变量/系统变量.
+[2]双击打开Path,新建:D:\vs2022\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64.
+[3]双击打开Path,新建:C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64.
+[4]新建系统环境变量INCLUDE,添加值:D:\vs2022\VC\Tools\MSVC\14.44.35207\include;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\ucrt;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um;C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\winrt.
+[5]新建系统环境变量LIB,添加值:D:\vs2022\VC\Tools\MSVC\14.44.35207\lib\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\ucrt\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x64.
+
+37,查看显卡的计算能力(硬件版本)的指令:nvidia-smi --query-gpu=compute_cap --format=csv.
+
+38,__global__的核函数,如果想在计算能力为3以上的设备端调用,需要使用动态并行技术:
+[1]如果是用命令行编译,需要以下指令:nvcc -arch=sm_89 -rdc=true cudaruntimetest000.cu -o cudaruntimetest000 -lcudadevrt.
+[2]如果是visual studio2022的cuda项目:
+[[1]]右键项目,/属性/配置属性/CUDA C/C++/Device/Code Generation:设置成你当前显卡计算能力.
+[[2]]右键项目,/属性/配置属性/CUDA C/C++/Common/Generate Relocatable Device Code:设置成是 (-rdc=true).
+[[3]]右键项目,/属性/配置属性/连接器/输入/附加依赖项:添加cudadevrt.lib.
+
+39,windows10中,如果要使用nvprof命令行分析工具,要先加入环境变量,右键此电脑:/属性/高级系统设置/环境变量/系统变量/Path然后新建并添加:C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\extras\CUPTI\lib64.
+
+40,windows安装opengl,在visual studio2022中使用opengl4.6(linux安装opengl参考47):
+[1]在visual studio2022中创建一个c++空项目.
+[2]在项目的解决方案文件(windows的文件系统,不是visual studio2022的文件系统)下新建3个文件夹include,lib和dll.
+[3]右键项目:/属性/配置属性/vc++目录/包含目录添加:$(SolutionDir)\include.
+[4]右键项目:/属性/配置属性/vc++目录/库目录添加:$(SolutionDir)\lib.
+[5]右键项目:/属性/配置属性/链接器/常规/附加库目录添加:$(SolutionDir)\lib.
+[6]右键项目:/属性/配置属性/链接器/输入/附加依赖项添加:opengl32.lib和glu32.lib.
+[7]以上[3]到[6]要在右键项目:/属性/配置的debug和release两种模式都设置.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[8]解压freeglut3.6.0forvs2022.rar得到freeglut3.6.0.
+[9]将/freeglut3.6.0/include/GL文件夹复制到项目解决方案的include文件夹中.
+[10]将/freeglut3.6.0/lib文件夹下的所有文件复制到项目解决方案的lib文件夹中.
+[11]将/freeglut3.6.0/bin/freeglut.dll文件复制到项目的解决方案的dll文件夹中.
+[12]右键项目:/属性/配置属性/链接器/输入/附加依赖项添加:freeglut.lib(至此freeglut安装完成).
+[13]如果在debug模式使用freeglut库,需要加上一句:#define NDEBUG.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[14]解压glfw-3.4.bin.WIN64.zip得到glfw-3.4.bin.WIN64.
+[15]将/glfw-3.4.bin.WIN64/include/GLFW文件夹复制到项目解决方案的include文件夹中.
+[16]将/glfw-3.4.bin.WIN64/lib-vc2022文件夹下的所有文件复制到项目解决方案的lib文件夹中.
+[17]右键项目:/属性/配置属性/链接器/输入/附加依赖项添加:glfw3.lib(至此glfw安装完成).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[18]解压gl3w.rar得到gl3w.
+[19]命令行中运行python gl3w_gen.py.
+[20]将/gl3w/include文件夹里的所有内容复制到项目解决方案的include文件夹中.
+[21]将/gl3w/src/gl3w.c复制到/项目解决方案/项目文件夹中(windows的文件系统,不是visual studio2022的文件系统).
+[22]在解决方案资源管理器(visual studio2022的文件系统,不是windows的文件系统)中右键源文件/添加/现有项把刚才的gl3w.c加进来.
+[23]在解决方案资源管理器(visual studio2022的文件系统,不是windows的文件系统)中右键gl3w.c:/属性/配置属性/c/c++/预编译头将预编译头改成不使用预编译头(至此gl3w库就配置完了).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[24]解压glew-2.1.0-win32.zip得到glew-2.1.0.
+[25]将/glew-2.1.0/include/GL文件夹复制到项目解决方案的include文件夹中.
+[26]将/glew-2.1.0/lib/Release/x64文件夹下的所有文件复制到项目解决方案的lib文件夹中.
+[27]将/glew-2.1.0/bin/Release/x64文件夹下的所有文件复制到项目解决方案的dll文件夹中.
+[28]右键项目:/属性/配置属性/链接器/输入/附加依赖项添加:glew32.lib(至此glew安装完成).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[29]将/glm/glm文件夹复制到项目解决方案的include文件夹中(至此glm安装完成).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[30]注:要将项目解决方案的dll文件夹中的所有.dll文件放到编译链接的.exe可执行文件同级目录中.
+[31]注:opengl不同库的头文件包含顺序为:
+//[1]先扩展加载:
+#include<GL/glew.h>
+//#include<GL/gl3w.h>
+//[2]标准opengl头文件:
+#include<gl/GL.h>
+#include<gl/GLU.h>
+//[3]窗口/上下文管理:
+#include<GL/freeglut.h>
+#include<GLFW/glfw3.h>
+//[4]其他库:
+#include<glm/glm.hpp>
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+41,opengl程序引入不同库的顺序:
+//[1]先扩展加载:
+#include<GL/glew.h>
+//#include<GL/gl3w.h>
+//[2]标准opengl头文件:
+#include<gl/GL.h>
+#include<gl/GLU.h>
+//[3]窗口/上下文管理:
+#include<GL/freeglut.h>
+#include<GLFW/glfw3.h>
+//[4]其他库:
+#include<glm/glm.hpp>
+
+42,windows11的linux子系统(wsl)配置方法(win10的参考12):
+[1]右键windows图标,/设置/系统/可选功能/更多windows功能/勾选hyper-v,virtual machine platform,windows虚拟机监控程序平台还有适用于windows的linux子系统,然后重启.
+[2]运行wsl.2.5.9.0.x64.msi(wsl内核升级软件).
+[3]找到所需的linux发行版,运行:wsl  --import ubuntu22.04.5 C:\wslworkspace\ubuntu22.04.5 C:\wslworkspace\ubuntu22.04.5\ubuntu-jammy-wsl-amd64-ubuntu22.04lts.rootfs.tar.gz  --version 2.
+[4]如果要注销的话运行:wsl --unregister ubuntu22.04.5,然后重新运行[3]安装.
+[5]设置root用户的密码:sudo passwd root.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[6]添加用户:sudo adduser guobojiang.
+[7]chmod u+w /etc/sudoers.
+[8]vim /etc/sudoers.
+[9]找到这一行:root    ALL=(ALL:ALL) ALL.
+[10]底下添加:guobojiang ALL=(ALL:ALL) ALL.
+[11]保存退出([6]到[11]是可选的,如果不添加新用户,用root用户也可以).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[12]vim ~/.bashrc.
+[13]export XDG_SESSION_TYPE=x11.
+[14]source ~/.bashrc.
+[15]sudo apt-get install x11-apps libxt6 libice6 libsm6 libxrender1.
+[16]安装gcc,g++,make,cmake和clang(参考16).
+
+43,安装win11和ubuntu双系统(1tb固态硬盘和1tb机械硬盘):
+[1]先用u盘安装win11,使用旧的安装程序,并且格式化掉所有分区,删除所有该删除的分区.
+[2]win11安装在1硬盘(0是机械硬盘,1是固态硬盘).
+[3]打开win11的控制面板:/硬件和声音/电源选项/更改电源按钮的功能/更改当前不可用设置/取消勾选启用快速启动.
+[4]右键windows图标:磁盘管理给固态硬盘1压缩128gb空间(用来ubuntu挂载根目录/),然后给机械硬盘0压缩128gb空间(用来挂载linux的home主目录,和引导linux).
+[5]进入bios关闭fast boot和secure boot.
+[6]用u盘安装ubuntu,选择手动分区,/目录放在固态硬盘的128gb,在机械硬盘创建efi系统分区1024mb,然后把/home放在机械硬盘剩下的空闲区域,选择引导启动设备是机械硬盘.
+[7]安装完成后进入ubuntu:
+[8]sudo fdisk -l//以超级管理员权限,列出计算机上所有磁盘和分区的详细信息.
+//挂载机械硬盘的 ESP 分区 (/dev/sda2)
+[9]sudo mkdir -p /mnt/hdd-efi
+[10]sudo mount /dev/sda2 /mnt/hdd-efi
+//挂载固态硬盘的 ESP 分区 (/dev/nvme0n1p1)
+[11]sudo mkdir -p /mnt/ssd-efi
+[12]sudo mount /dev/nvme0n1p1 /mnt/ssd-efi
+//复制ubuntu引导文件从固态硬盘到机械硬盘
+[13]sudo cp -r /mnt/ssd-efi/EFI/ubuntu /mnt/hdd-efi/EFI/
+//Boot目录也复制
+[14]sudo cp -r /mnt/ssd-efi/EFI/Boot /mnt/hdd-efi/EFI/
+//移除固态硬盘的ubuntu引导
+[15]sudo rm -rf /mnt/ssd-efi/EFI/ubuntu/
+//安装grub到机械硬盘的 ESP 分区
+[16]sudo grub-install --target=x86_64-efi --efi-directory=/mnt/hdd-efi --bootloader-id=ubuntu --recheck
+//更新grub
+[17]sudo update-grub
+//查看当前启动项
+[18]sudo efibootmgr -v
+//创建新的启动项指向机械硬盘
+[19]sudo efibootmgr -c -d /dev/sda -p 2 -L "Ubuntu HDD" -l "\EFI\ubuntu\grubx64.efi"
+//移除固态硬盘的ubuntu旧启动项
+[20]sudo efibootmgr -b 0 -B
+//卸载分区
+[21]sudo umount /mnt/hdd-efi
+[22]sudo umount /mnt/ssd-efi
+//删除临时挂载点
+[23]sudo rmdir /mnt/hdd-efi
+[24]sudo rmdir /mnt/ssd-efi
+//重启系统,并且将bios设置成机械硬盘的ubuntu优先启动
+[25]sudo reboot
+[26]参考72,windows和linux双系统时间同步.
+
+44,ubuntu安装显卡驱动:
+[1]安装gcc,g++,make,cmake和clang(参考16).
+[2]sudo apt-get --purge remove nvidia*.
+[3]sudo apt autoremove.
+[4]sudo vim /etc/modprobe.d/blacklist-nouveau.conf.
+[5]加入这两行:
+blacklist nouveau
+options nouveau modeset=0
+[6]sudo update-initramfs -u.
+[7]重启.
+[8]lspci|grep nouveau.//没有输出说明禁用成功.
+[9]sudo chmod 777 NVIDIA-Linux-x86_64-570.169.run.
+[10]ctrl+alt+f3进入虚拟控制台3.
+[11]sudo service gdm3 stop(如果这句命令卡住了,可以先运行ctrl+alt+f2启动虚拟控制台2,再切换回来).
+[12]sudo ./NVIDIA-Linux-x86_64-570.169.run.
+[13]sudo service gdm3 start.
+[14]重启,安装完毕.
+
+45,linux安装cuda:
+[1]安装gcc,g++,make,cmake和clang(参考16).
+[2]sudo chmod 777 cuda_12.8.1_570.124.06_linux.run.
+[3]sudo ./cuda_12.8.1_570.124.06_linux.run.
+[4]sudo vim ~/.bashrc.
+[5]添加以下(有多个版本cuda时候进行选择):
+#export PATH=$PATH:$PATH:/usr/local/cuda/bin
+export PATH=$PATH:$PATH:/usr/local/cuda-11.8/bin${PATH:+:${PATH}}
+#export PATH=$PATH:$PATH:/usr/local/cuda-12.9/bin${PATH:+:${PATH}}
+
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.8/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.9/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+export CUDA_HOME=$CUDA_HOME/usr/local/cuda-11.8
+#export CUDA_HOME=$CUDA_HOME/usr/local/cuda-12.9
+
+[6]source ~/.bashrc.
+
+46,linux编译gaussian splatting的siber viewer:
+[1]需要ubuntu22.04.5版本.
+[2]安装gcc,g++,make,cmake和clang(参考16,gcc和g++版本要9,cmake版本要3.22.1).
+[3]安装cuda(参考45,要安装cuda11.8版本).
+[4]sudo apt install aptitude(使用aptitude比apt更智能,能解决很多冲突).
+[5]sudo aptitude install -y libglew-dev libassimp-dev libboost-all-dev libgtk-3-dev libopencv-dev libglfw3-dev libavdevice-dev libavcodec-dev libeigen3-dev libxxf86vm-dev libembree-dev.
+[6]cd SIBR_viewers.
+[7]sudo mv /home/guobojiang/anaconda3/lib/ /home/guobojiang/(防止已经安装的anaconda和它起冲突).
+[8]cmake -Bbuild . -DCMAKE_BUILD_TYPE=Release.
+[9]cmake --build build -j24 --target install.
+[10]sudo mv /home/guobojiang/lib/ /home/guobojiang/anaconda3/.
+
+47,linux安装opengl(windows安装opengl参考40):
+[1]安装gcc,g++,make,cmake和clang(参考16).
+[2]sudo apt-get install libgl1-mesa-dev.
+[3]sudo apt-get install libglu1-mesa-dev.
+[4]sudo apt install mesa-utils.
+[5]glxinfo | grep -i opengl(查看opengl版本,至此基本opengl库安装完成).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[6]sudo apt-get install libxrandr-dev.
+[7]sudo apt-get install libxinerama-dev.
+[8]sudo apt-get install libxcursor-dev.
+[9]sudo apt-get install libxi-dev.
+[10]git clone git@github.com:glfw/glfw.git.
+[11]cd glfw.
+[12]mkdir build && cd build.
+[13]cmake .. -DGLFW_BUILD_WAYLAND:BOOL=OFF.
+[14]make -j4.
+[15]sudo make install.
+[16]sudo updatedb.
+[17]locate glfw(至此glfw安装完了).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[18]解压glew-2.2.0.zip.
+[19]sudo apt-get install build-essential libxmu-dev libxi-dev libgl-dev cmake git.
+[20]cd glew-2.2.0.
+[21]cd build/.
+[22]cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ./cmake.
+[23]make -j4.
+[24]sudo make install.
+[25]sudo updatedb.
+[26]locate glew(至此glew安装完了).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[27]git clone git@github.com:skaslev/gl3w.git.
+[28]cd gl3w.
+[29]python gl3w_gen.py.
+[30]mkdir build.
+[31]cd build.
+[32]cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ...
+[33]make.
+[34]sudo make install.
+[35]sudo updatedb.
+[36]locate gl3w(至此gl3w安装完了).
+[37]复制以下文件:
+sudo cp /usr/local/include/gl3w/GL/gl3w.h /usr/local/include/GL/
+sudo cp /usr/local/include/gl3w/GL/glcorearb.h /usr/local/include/GL/
+sudo cp /usr/local/include/gl3w/KHR/khrplatform.h /usr/local/include/GL/
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[38]git clone git@github.com:freeglut/freeglut.git.
+[39]cd freeglut.
+[40]mkdir build && cd build.
+[41]cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ...
+[42]make.
+[43]sudo make install.
+[44]sudo updatedb.
+[45]locate freeglut(至此freeglut安装完了).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[46]git clone git@github.com:g-truc/glm.git.
+[47]cd glm/.
+[48]cmake -DGLM_BUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -B build.
+[49]cmake --build build -- all.
+[50]sudo cmake --build build -- install.
+[51]sudo updatedb.
+[52]locate glm(至此glm安装完毕).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[53]CMakeLists.txt如下:
+cmake_minimum_required( VERSION 4.0 )
+project( opengltest000 )
+
+
+
+find_package( OpenGL )
+
+# 添加FreeGLUT依赖
+find_package( GLUT REQUIRED)#CMake会生成变量如FreeGLUT_INCLUDE_DIRS（头文件路径）和FreeGLUT_LIBRARIES(库文件路径)供后续步骤使用.
+include_directories( ${GLUT_INCLUDE_DIRS} )#在CMake中，${}符号是‌变量解引用操作符,主要用于获取CMake变量的值.
+
+find_package( glfw3 REQUIRED)
+include_directories( ${glfw3_INCLUDE_DIRS} )
+
+find_package( GLEW)
+include_directories( ${GLEW_INCLUDE_DIRS} )
+
+find_package(gl3w )
+include_directories( ${gl3w_INCLUDE_DIRS} )
+
+find_package(glm)
+include_directories( ${glm_INCLUDE_DIRS} )
+
+add_executable( opengltest000 opengltest000.cpp )
+target_link_libraries( opengltest000 OpenGL::GL )
+target_link_libraries( opengltest000 ${GLUT_LIBRARIES} )
+target_link_libraries( opengltest000 glfw )
+target_link_libraries( opengltest000 GLEW::GLEW )
+target_sources(opengltest000 PRIVATE /usr/local/share/gl3w/gl3w.c)
+target_link_libraries( opengltest000 ${glm_LIBRARIES} )
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+48,ubuntu安装多个版本的clang和llvm:
+[1]sudo apt update和sudo apt upgrade.
+[2]sudo apt install clang(这会安装默认版本clang).
+[3]sudo apt install llvm(这会安装默认版本llvm).
+[4]将刚才安装的clang,clang++和opt版本放入候选列表:
+[[1]]sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-14 14.
+[[2]]sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 14.
+[[3]]sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 14.
+[[4]]sudo update-alternatives --install /usr/bin/opt opt /usr/bin/opt-14 14.
+[5]如果直接解压llvm预编译压缩包,也要讲预编译包里面的clang,clang++,opt放入候选列表:
+[[1]]sudo update-alternatives --install /usr/bin/llvm-config llvm-config /home/guobojiang/LLVM-20.1.8-Linux-X64/bin/llvm-config 20.
+[[2]]sudo update-alternatives --install /usr/bin/clang clang /home/guobojiang/LLVM-20.1.8-Linux-X64/bin/clang-20 20.
+[[3]]sudo update-alternatives --install /usr/bin/clang++ clang++ /home/guobojiang/LLVM-20.1.8-Linux-X64/bin/clang++ 20.
+[[4]]sudo update-alternatives --install /usr/bin/opt opt /home/guobojiang/LLVM-20.1.8-Linux-X64/bin/opt 20.
+[6]在候选列表选择不同版本的clang,clang++和opt:
+[[1]]sudo update-alternatives --config llvm-config.
+[[2]]sudo update-alternatives --config clang.
+[[3]]sudo update-alternatives --config clang++.
+[[4]]sudo update-alternatives --config opt.
+
+49,windows11下msvc,gcc,clang编译器编译utf-8编码文件导致中文乱码问题:
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[1]msvc指定输入和输出编码格式:cl /source-charset:utf-8 /execution-charset:gbk cpptest000.cpp.
+[2]实际使用的时候:将utf-8文件转换为utf-8 bom或者gbk,然后直接使用:cl cpptest000.cpp.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[3]gcc指定输入和输出编码格式:g++ -finput-charset=utf-8 -fexec-charset=gbk cpptest000.cpp.
+[4]实际使用时候,如果是使用cmake来管理gcc编译,在CMakeLists.txt加入:
+[[1]]全局性:add_compile_options(-finput-charset=utf-8 -fexec-charset=gbk).
+[[2]]局部性:target_compile_options(cpptest000 PRIVATE -finput-charset=utf-8 -fexec-charset=gbk).
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[5]clang指定输入和输出编码格式:clang++ -finput-charset=utf-8 -fexec-charset=utf-8 cpptest000.cpp(clang的-finput-charset和-fexec-charset不支持gbk).
+[6]实际使用的时候:将utf-8或者utf-8 bom文件转换为gbk格式,然后直接使用:clang++ cpptest000.cpp.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[7]系统级解决方案(不推荐),直接修改windows11的powershell和cmd的输出编码格式(从gbk修改为utf-8):
+[[1]]右键windows图标:设置/时间和语言/语言和区域/windows显示语言/勾选Beta版:使用Unicode UTF-8提供全球语言支持.
+[[2]]重启就好了.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+50,在wsl里面调用windows11的msvc编译器,并且使用wsl的make调用msvc编译器:
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[1]参考36.
+[2]vim ~/.bashrc.
+[3]加入:
+[[1]]export WIN_VS_PATH="C:/guobojiangprograms/vs2022"
+[[2]]export WIN_SDK_PATH="C:/Program Files (x86)/Windows Kits"
+[[3]]export PATH="$WSL_VS_PATH/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64:$PATH"
+[[4]]export PATH="$WSL_SDK_PATH/bin/10.0.26100.0/x64:$PATH"
+[4]source ~/.bashrc.
+[5]运行cl.exe即可调用msvc编译器.
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+[6]如果要用make调用msvc:
+[[1]]把nmake的Makefile里面所有的cl替换成cl.exe.
+[[2]]直接用make命令.
+
+51,python程序的命令行参数解析:
+[1]from argparse import ArgumentParser,Namespace
+[2]parser000=ArgumentParser(description="这是ArgumentParser类的对象.")  #创建命令行解析器对象.
+[3]parser000.add_argument("-f","--first",help="第一个参数的帮助",required=False,type=int) #加入第一个参数.
+[4]parser.add_argument("-s",dest="seccond",help="第二个参数的帮助",required=False,type=int) #加入第二个参数,dest是参数名称.
+[5]group000= parser000.add_argument_group("参数组000") #加入参数组000.
+[6]group000.add_argument("-t",dest="third",help="第三个参数的帮助",default=12,type=int) #加入第三个参数.
+[7]namespace000=parser.parse_args() #解析参数,返回一个Namespace类的对象namespace000.
+[8]print(parser.description)
+[9]print(namespace000.first) #没有指定dest和--长参数时候,可以使用f这样的短参数名字,指定--长参数但是没有指定dest则只能使用长参数名字,指定了dest之后只能使用dest.
+[10]print(namespace000.seccond)
+[11]print(namespace000.third)
+[12]print("后续程序")
+
+52,conda的使用:
+[1]conda create --name enviroment000 python=3.11. //创建环境.
+[2]conda activate enviroment000. //激活环境.
+[3]conda list.  //列出当前环境中的包.
+[4]conda deactivate. //退出环境.
+[5]conda env list.  //列出所有环境.
+[6]conda remove -n enviroment000 --all.  //移除环境.
+[7]conda clean --all.//清理不需要的缓存包.
+[8]conda env export > environment.yml.//导出当前conda环境配置到environment.yml文件
+
+53,svox2环境搭建:
+[1]要修改environment.yml中的python版本,改成3.9.
+
+54,neural_rgbd环境搭建:
+[1]git clone git@github.com:dazinovic/neural-rgbd-surface-reconstruction.git --recursive.
+[2]cd neural-rgbd-surface-reconstruction/.
+[3]conda env create -f environment.yml.
+[4]conda activate neural_rgbd.
+[5]cd external/NumpyMarchingCubes.
+[6]python setup.py install.
+
+55,cuda的线程束分化编译和分析:
+[0]nvcc -O3 -arch=sm_52 cudatest000.cu -o cudaruntimetest000.exe
+[1]nvcc -g -G -arch=sm_52 cudatest000.cu -o cudaruntimetest000.exe
+[2]ncu --metrics smsp__sass_average_branch_targets_threads_uniform.pct cudaruntimetest000.exe //相当于nvprof --metrics branch_efficiency cudaruntimetest000.exe
+[3]ncu --metrics smsp__sass_branch_targets_threads_uniform.sum,smsp__sass_branch_targets_threads_divergent.sum cudaruntimetest000.exe//相当于nprof --events branch,divergent_branch cudaruntimetest000.exe
+
+56,visual studio2022专业版激活密钥:TD244-P4NB7-YQ6XK-Y8MMM-YWV2J.
+
+57,cuda查询显存频率:
+[1]windows中是nvidia-smi -a -q -d CLOCK | Select-String -Pattern "Max Clocks" -Context 0,3 | ForEach-Object {$_.Context.PostContext | Select-String "Memory"}
+//这是 NVIDIA 系统管理接口命令,用于查询 GPU 的详细信息.
+//-a或--query-gpu:显示所有 GPU 的详细信息.
+//-q或--query:指定查询模式.
+//-d CLOCK 或 --display=CLOCK:只显示时钟信息.
+//Select-String:文本搜索工具.
+//-Pattern "Max Clocks": 搜索包含"Max Clocks"的行.
+//-Context 0,3:显示匹配行后的3行内容(0表示前0行,3表示后3行).
+//ForEach-Object: 对每个匹配项执行操作.
+//$_.Context.PostContext:获取匹配行后的上下文内容.
+//Select-String "Memory": 在上下文中搜索包含"Memory"的行.
+(linux中是nvidia-smi -a -q -d CLOCK | fgrep -A 3 "Max Clocks" | fgrep "Memory").
+
+58,cuda的占用率计算器使用方法(老的计算能力<=8.6的gpu,如果是新的计算能力>8.6的gpu,用nsight compute):
+[1]找到C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\tools\CUDA_Occupancy_Calculator.xls.
+[2]用excel打开CUDA_Occupancy_Calculator.xls.
+[3]在黄色的输入单元格填入内核函数参数.
+[4]其他单元格会自动更新分析结果.
+
+59,cuda程序计时:
+//以下是cpu端-------------------------------------------------------------------------------------------------------------------------------------------------
+[1]#include<time.h>.
+[2]((double)clock() / (double)CLOCKS_PER_SEC).
+//以上是cpu端-------------------------------------------------------------------------------------------------------------------------------------------------
+//以下是gpu端-------------------------------------------------------------------------------------------------------------------------------------------------
+[3]cudaEvent_t start, stop;
+[4]cudaEventCreate(&start);
+[5]cudaEventCreate(&stop);
+[6]cudaEventRecord(start);// 记录开始时间
+[7]hhs000<<<grid, block>>>();// 启动核函数 - 这只是向命令队列提交任务
+[8]cudaEventRecord(stop);//记录结束事件 - 这也是向命令队列提交任务,这个任务会自动排在核函数完成之后执行
+[9]cudaEventSynchronize(stop);// 等待stop事件完成（即等待前面的所有操作完成）
+[10]float elapsedtime;// 现在可以安全地获取时间差
+[11]cudaEventElapsedTime(&elapsedtime,start, stop);
+//以上是gpu端-------------------------------------------------------------------------------------------------------------------------------------------------
+
+60,创建visual studio2022离线安装包:
+[1]打开:https://learn.microsoft.com/zh-cn/visualstudio/install/install-visual-studio?view=vs-2022.
+[2]在版本中选择visual studio2022.
+[4]打开/installation/脱机安装/创建visual studio的脱机安装,然后选择"下载所需 Visual Studio 版本和版次的正确引导程序".
+[5]将下载下来的vs_Professional.exe放入文件夹D:\visualstudio2022.17.14.21\.
+[6]打开/installation/管理员指南/在企业中部署/visual studio工作负载和组件id/visual studio professional.
+[7]查看你需要的工作负载.
+[8]在文件夹D:\visualstudio2022.17.14.21\内执行命令行(工作负载按照[6]和[7]中的按需选择):
+.\vs_Professional.exe --layout D:\visualstudio2022.17.14.21 --add    Microsoft.VisualStudio.Workload.CoreEditor Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.ManagedGame Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Workload.NativeGame Microsoft.VisualStudio.Workload.Python Microsoft.VisualStudio.Workload.Universal  --includeRecommended --lang zh-CN.
+[9]完成后运行vs_setup.exe即可开始安装.
+
+61,查看cuda程序的可实现占用率:
+[1]新版ncu:ncu --metrics sm__warps_active.avg.pct_of_peak_sustained_elapsed .\cudaruntimetest000.exe.
+[2]老版nvprof:nvprof --metrics achieved_occupancy \cudaruntimetest000.exe.
+
+62,cuda查看内核函数每秒的全局内存读取的吞吐量(软件层面)是:
+[1]新版ncu:ncu --metrics l1tex__t_bytes_pipe_lsu_mem_global_op_ld.sum.per_second cudaruntimetest000.exe.
+[2]老板nvprof:nvprof --metrics gld_throughput cudaruntimetest000.exe.
+
+63,cuda查看全局内存读取效率(全局内存读取效率=(核函数实际需要的字节数 / GPU 硬件实际从全局内存读取的字节数)):
+[1]新版ncu:ncu --metrics smsp__sass_average_data_bytes_per_sector_mem_global_op_ld.pct cudaruntimetest000.exe.
+[2]老版nvprof:nvprof --metrics gld_efficiency cudaruntimetest000.exe.
+
+64,cuda查看每个线程束执行的指令数量的平均值:
+[1]新版ncu:ncu --metrics smsp__average_inst_executed_per_warp.ratio cudaruntimetest000.exe.
+[2]老版nvprof:nvprof --metrics inst_per_warp cudaruntimetest000.exe.
+
+65,cuda查看内核函数每秒的全局内存读取的吞吐量(硬件层面,)是:
+[1]新版ncu:ncu --metrics dram__bytes_read.sum.per_second cudaruntimetest000.exe.
+[2]老版nvprof:nvprof --metrics dram_read_throughput cudaruntimetest000.exe.
+
+66,cuda中查看因为__syncthreads()阻塞的线程束占所有活跃线程束的百分比:
+[1]新版ncu:ncu --metrics smsp__warp_issue_stalled_barrier_per_warp_active.pct cudaruntimetest000.exe.
+[2]老版nvprof:nvprof --metrics stall_sync cudaruntimetest000.exe.
+
+67,cuda查看全局内存写入效率(参考63,全局内存写入效率=(核函数实际写入的字节数 / GPU 硬件实际从全局内存写入的字节数)):
+[1]新版ncu:ncu --metrics smsp__sass_average_data_bytes_per_sector_mem_global_op_st.pct cudaruntimetest000.exe.
+[2]老版nvprof:nvprof --metrics gst_efficiency cudaruntimetest000.exe.
+         
+68,使用pytorch的c++/cuda扩展从python调用cuda c核函数:
+[1]编译需要指令:python setup.py build_ext --inplace.
+//build_ext是setuptools(Python的标准构建工具,用于打包和分发Python包.)的一个子命令,这个命令专门负责构建外部扩展模块.
+/*--inplace传递给build_ext命令的参数,决定将生成的.so动态库放在哪里:
+[[1]]没有在setup.py里面的CUDAExtension的name里指定包:
+[[[1]]]有--inplace:将生成的.so库放入当前目录.
+[[[2]]]没有--inplace:将生成的.so库放入./build/中.
+[[2]]在setup.py里面的CUDAExtension的name里指了定包:
+[[[1]]]有--inplace:将生成的.so库放入包文件夹中.
+[[[2]]]没有--inplace:将生成的.so库放入./build/中.
+*/
+
+69,在linux中安装和使用rar和unrar:
+[1]sudo apt update.
+[2]sudo apt install rar.
+[3]sudo apt install unrar.
+[4]压缩指令:rar a -r wtjck000.rar wtjck000/.
+[5]解压指令:unrar x wtjck000.rar.
+
+70,linux中实时监控显卡状态:
+[1]watch -n 1 nvidia-smi.
+//watch是一个linux/unix系统中的标准命令,它定期重复地执行指定的命令,并将该命令的输出全屏显示出来,默认情况下,它每2秒更新一次.
+//watch的-n 1参数表示:"每隔1秒执行一次后面的命令".
+//nvidia-smi(NVIDIA System Management Interface)是NVIDIA显卡驱动程序提供的一个非常重要的命令行工具,用于监控和管理NVIDIA GPU设备,它可以显示关于GPU的各种实时信息.
+
+71,windows11的dos2unix安装和使用:
+[1]解压dos2unix-7.5.3-win64.zip到D:\dos2unix-7.5.3-win64\.
+[2]右键此电脑\属性\高级系统设置\环境变量\系统变量\Path\新建一个D:\dos2unix-7.5.3-win64\bin.
+[3]进入要转换的文件夹,在cmd中输入:
+[[1]]linux(unix)转换成windows(dos):for /R %G in (*.py *.cu *.c *.cpp *.h *.txt *.md *.mk) do unix2dos "%G".
+//for:循环命令,用于批量处理文件.
+///R:递归参数,表示递归搜索所有子目录.
+//%G:循环变量,每次循环时存储当前处理的文件名(在批处理文件.bat中要写成 %%G).
+//in (*.py *.cu *.c *.cpp *.h *.txt *.md *.mk)指定要处理的文件类型.
+//do:执行后面的命令.
+//unix2dos:转换工具,将Unix/Linux格式换行符(LF)转换为Windows格式(CRLF).
+//"%G":用引号括起来的文件名变量,确保包含空格的文件名也能正确处理.
+[[2]]windows(dos)转换成linux(unix):for /R %G in (*.py *.cu *.c *.cpp *.h *.txt *.md *.mk) do dos2unix "%G".
+
+72,windows和linux双系统时间同步:
+[1]windows上面:系统时间=bios时间(本地时间).
+[2]linux上面:系统时间=bios时间(utc时间)+8(东8区时区偏移).
+[3]每次进入linux,都会联网同步系统时间,同时将bios时间(utc时间)设置为系统时间-8(东8区时区偏移).
+[4]这时候再次进入windows就会导致系统时间慢8个小时.
+[5]解决办法是把linux的系统时间设置为bios时间(本地时间):sudo timedatectl set-local-rtc 1.
+
+73,visual studio2022更改文件编码格式:
+[1]\工具\选项\环境\文档\勾选使用特定编码保存文件\选择(只有以下这两个选择编译中文不会出现乱码):
+[[1]]简体中文(gb2312)-代码页936.
+[[2]]unicode(utf-8带签名)-代码页65001.
+
+74,stickerrender环境配置:
+[1]需要windows11系统.
+[2]安装显卡驱动.
+[3]安装visual studio2022.
+[4]安装cuda12.9.
+[5]把msvc编译器配置进环境变量(参考36).
+[6]安装anaconda(参考13).
+[7]cd stickerrender.
+[8]运行stickerrender的enviroment001windows.bat.
+[9]conda activate stickerrender.
+[10]cd ./faiss-1.13.1/build/.
+[11]conda install -c conda-forge swig -y
+[12]conda install -c conda-forge openblas libopenblas -y
+[13]conda install packaging -y
+[14]鼠标右键此电脑/属性/高级系统设置/环境变量/系统变量/LIB里面新增:D:\anaconda\envs\stickerrender\libs.
+[15]mkdir build
+[16]cd build
+[17]cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DFAISS_ENABLE_GPU=ON -DFAISS_ENABLE_PYTHON=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DBLA_VENDOR=OpenBLAS -DBLAS_LIBRARIES="D:/anaconda/envs/stickerrender/Library/lib/openblas.lib" -DLAPACK_LIBRARIES="D:/anaconda/envs/stickerrender/Library/lib/openblas.lib" -DCUDAToolkit_ROOT="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9" -DCMAKE_CUDA_ARCHITECTURES="89" -DCMAKE_CXX_COMPILER=cl
+[18]cmake --build . --config Release --target faiss -j 8
+[19]cmake --build . --config Release --target faiss_python_callbacks -j 8
+[20]cmake --build . --config Release --target swigfaiss -j 8
+[21]cd faiss/python
+[22]python setup.py install
+[23]把以下3个.dll文件复制进D:\anaconda\envs\stickerrender\Lib\site-packages\faiss:
+[[1]]C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9\bin\cudart64_12.dll"
+[[2]]C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9\bin\cublas64_12.dll"
+[[3]]C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9\bin\cublasLt64_12.dll"
+[24]卸载的话:pip uninstall faiss
